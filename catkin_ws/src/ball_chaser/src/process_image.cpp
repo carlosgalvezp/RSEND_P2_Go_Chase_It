@@ -23,7 +23,7 @@ void drive_robot(float lin_x, float ang_z)
 }
 
 // This callback function continuously executes and reads the image data
-void process_image_callback(const sensor_msgs::Image img)
+void process_image_callback(const sensor_msgs::Image& img)
 {
 
     bool found_ball = false;
@@ -34,6 +34,9 @@ void process_image_callback(const sensor_msgs::Image img)
     constexpr uint32_t kNrChannels = 3U;
 
     constexpr uint8_t kWhitePixel = 255U;
+
+    const uint32_t kLeftBoundary = img.width / 3U;
+    const uint32_t kRightBoundary = (2U * img.height) / 3U;
 
     // Loop through each pixel in the image and check if there's a bright white one
     // Then, identify if this pixel falls in the left, mid, or right side of the image
@@ -48,27 +51,22 @@ void process_image_callback(const sensor_msgs::Image img)
             const uint8_t pixel_g = img.data[idx_base + 1U];
             const uint8_t pixel_b = img.data[idx_base + 2U];
 
-            if ((pixel_r == kWhitePixel) &&
-                (pixel_g == kWhitePixel) &&
-                (pixel_b == kWhitePixel))
+            if ((pixel_r == kWhitePixel) && (pixel_g == kWhitePixel) && (pixel_b == kWhitePixel))
             {
-                if (j < img.width / 3U)
+                if (j < kLeftBoundary)
                 {
                     // Left part of the image -> turn left
-                    std::cout << "Found pixel in left part of image, j = " << j << std::endl;
                     drive_robot(0.F, kSpeedRotation);
                 }
-                else if (j < (2U * img.width) / 3U)
+                else if (j > kRightBoundary)
                 {
-                    // Center part of the image -> move forward
-                    std::cout << "Found pixel in center part of image, j = " << j << std::endl;
-                    drive_robot(kSpeedForward, 0.F);
+                    // Right part of the image -> turn right
+                    drive_robot(0.F, -kSpeedRotation);
                 }
                 else
                 {
-                    // Right part of the image -> turn right
-                    std::cout << "Found pixel in right part of image, j = " << j << std::endl;
-                    drive_robot(0.F, -kSpeedRotation);
+                    // Center part of the image -> move forward
+                    drive_robot(kSpeedForward, 0.F);
                 }
                 return;
             }

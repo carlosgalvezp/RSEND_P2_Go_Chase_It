@@ -21,9 +21,6 @@ bool handle_drive_request(ball_chaser::DriveToTarget::Request& req,
 
     motor_command_publisher.publish(msg);
 
-    // Wait a few seconds
-    ros::Duration(3).sleep();
-
     // Return a message response
     res.msg_feedback = "Linear X speed set to " + std::to_string(msg.linear.x) + "; " +
                        "Angular Z speed set to " + std::to_string(msg.angular.z);
